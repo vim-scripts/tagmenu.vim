@@ -1,31 +1,48 @@
 " File: tagmenu.vim
 " Author: Yegappan Lakshmanan
-" Version: 1.2
-" Last Modified: June 27, 2002
+" Version: 1.3
+" Last Modified: Sep 25, 2002
 "
 " Overview
 " --------
-" The "Tags Menu" (tagmenu.vim) plugin script creates a "Tags" menu
-" containing all the tags (variable, function, classes, methods, macros, etc)
-" defined in the current file.  If you select a tag name from the menu, the
-" cursor will be positioned at the location of the selected tag. The tags will
-" be grouped according to their type (function, variable, class, etc) and
-" displayed in submenus.
+" The "Tags Menu" plugin provides the following features:
 "
-" As this script uses menus, this plugin will work only with GUI Vim.  This
-" script relies on the exuberant ctags utility (http://ctags.sourceforge.net)
-" to get the tags defined in a file.  This script will run on all the
-" platforms where the exuberant ctags utility is supported (this includes
-" MS-Windows and Unix based systems). There is no need for you to create a
-" tags file to use this plugin.
+" 1. Creates a "Tags" menu containing all the tags (variables, functions,
+"    classes, methods, macros, etc) defined in the current file.
+" 2. Creates a popup menu with the contents of the "Tags" menu. This popup
+"    menu can be accessed  by right clicking the mouse.
+" 3. Groups the tags by their type and displays them in separate submenus.
+" 4. The "Tags" menu can be sorted either by name or by line number.
+" 5. When a tag name is selected from the "Tags" menu, positions the cursor
+"    at the definition of the tag.
+" 6. Automatically updates the "Tags" menu as you switch between
+"    files/buffers.
+" 7. If the number of tags in a particular type exceeds a configurable limit,
+"    splits the menu for that tag type into one or more submenus.
+" 8. Supports the following language files: Assembly, ASP, Awk, C, C++,
+"    Cobol, Eiffel, Fortran, Java, Lisp, Make, Pascal, Perl, PHP, Python,
+"    Rexx, Ruby, Scheme, Shell, Slang, TCL, Verilog, Vim and Yacc.
+" 9. Runs in all the platforms where the exuberant ctags utility and Vim are
+"    supported (this includes MS-Windows and Unix based systems).
+" 10. Will run only in the GUI version of Vim.
+" 11. The ctags output for a file is cached to speed up updating the "Tags"
+"     menu.
 "
-" This script supports the following language files: Assembly, ASP, Awk, C,
-" C++, Cobol, Eiffel, Fortran, Java, Lisp, Make, Pascal, Perl, PHP, Python,
-" Rexx, Ruby, Scheme, Shell, Slang, TCL, Vim and Yacc
+" This script relies on the exuberant ctags utility to get the tags defined in
+" a file. You can download the exuberant ctags utility from
+" http://ctags.sourceforge.net. The exuberant ctags utility must be installed
+" in your system to use this plugin. You should use exuberant ctags version
+" 5.3 and above.  There is no need for you to create a tags file to use this
+" plugin.
 "
-" When you enter a file, a menu with all the tags in the file will be
-" automatically created.  When you leave the file, the menu entries will be
-" removed.
+" Installation
+" ------------
+" 1. Copy the tagmenu.vim script to the $HOME/.vim/plugin directory.  Refer to
+"    ':help add-plugin', ':help add-global-plugin' and ':help runtimepath' for
+"    more details about Vim plugins.
+" 2. Set the Tmenu_ctags_cmd variable to point to the exuberant ctags utility
+"    path.
+" 3. Restart Vim.
 "
 " Configuration
 " -------------
@@ -64,9 +81,6 @@
 "
 "           let Tmenu_sort_type = "name"
 "
-" You can also tear-off the tag menu.  The tag menu will be updated
-" automatically as you switch between files.
-"
 " This script will not work in 'compatible' mode.  Make sure the 'compatible'
 " option is not set. This script depends on the file type detected by Vim.
 " Make sure the Vim file type detection (:filetype on) is turned on.
@@ -85,7 +99,6 @@ endif
 
 " The default location of the exuberant ctags
 if !exists("Tmenu_ctags_cmd")
-    "let Tmenu_ctags_cmd = '/usr/bin/ctags'
     let Tmenu_ctags_cmd = 'ctags'
 endif
 
@@ -106,7 +119,7 @@ endif
 " File types supported by tagmenu
 let s:tmenu_file_types = 'asm asp awk c cpp cobol eiffel fortran java lisp ' .
             \ 'make pascal perl php python rexx ruby scheme sh slang tcl ' .
-            \ 'vim yacc'
+            \ 'verilog vim yacc'
 
 " assembly language
 let s:tmenu_asm_ctags_args = '--language-force=asm --asm-types=dlmt'
@@ -114,7 +127,7 @@ let s:tmenu_asm_tag_types = 'define label macro type'
 
 " asp language
 let s:tmenu_asp_ctags_args = '--language-force=asp --asp-types=fs'
-let s:tmenu_asp_tag_types = 'function subroutine'
+let s:tmenu_asp_tag_types = 'function sub'
 
 " awk language
 let s:tmenu_awk_ctags_args = '--language-force=awk --awk-types=f'
@@ -141,7 +154,7 @@ let s:tmenu_eiffel_tag_types = 'class feature'
 let s:tmenu_fortran_ctags_args = '--language-force=fortran ' .
                                  \ '--fortran-types=bcefiklmnpstv'
 let s:tmenu_fortran_tag_types = 'block common entry function interface ' .
-            \ 'type label module namelist program subroutine derived module'
+            \ 'type label module namelist program subroutine derived variable'
 
 " java language
 let s:tmenu_java_ctags_args = '--language-force=java --java-types=pcifm'
@@ -194,6 +207,10 @@ let s:tmenu_slang_tag_types = 'namespace function'
 " tcl language
 let s:tmenu_tcl_ctags_args = '--language-force=tcl --tcl-types=p'
 let s:tmenu_tcl_tag_types = 'procedure'
+
+"verilog language
+let s:tmenu_verilog_ctags_args = '--language-force=verilog --verilog-types=mPrtwpvf'
+let s:tmenu_verilog_tag_types = 'module parameter reg task wire port variable function'
 
 " vim language
 let s:tmenu_vim_ctags_args = '--language-force=vim --vim-types=vf'
@@ -248,7 +265,6 @@ function! s:Remove_Tags_Menu()
 
     " Cleanup the Tags menu
     silent! unmenu T&ags
-    menu T&ags.Dummy l
     silent! unmenu! T&ags
 
     amenu <silent> T&ags.Refresh\ menu :call <SID>Refresh_Tags_Menu()<CR>
@@ -257,7 +273,18 @@ function! s:Remove_Tags_Menu()
     amenu <silent> T&ags.Sort\ menu\ by.Order 
                                     \ :call <SID>Sort_Tags_Menu("order")<CR>
     amenu T&ags.-SEP1-           :
-    unmenu T&ags.Dummy
+
+    " Cleanup the popup menu
+    silent! unmenu PopUp.T&ags
+    silent! unmenu! PopUp.T&ags
+
+    amenu <silent> PopUp.T&ags.Refresh\ menu 
+                                \ :call <SID>Refresh_Tags_Menu()<CR>
+    amenu <silent> PopUp.T&ags.Sort\ menu\ by.Name 
+                                \ :call <SID>Sort_Tags_Menu("name")<CR>
+    amenu <silent> PopUp.T&ags.Sort\ menu\ by.Order 
+                                \ :call <SID>Sort_Tags_Menu("order")<CR>
+    amenu PopUp.T&ags.-SEP1-           :
 
     let s:tmenu_empty = 1
 endfunction
@@ -272,7 +299,6 @@ function! s:Add_Tags_Menu(menu_clear)
     if (a:menu_clear)
         " Cleanup the Tags menu
         silent! unmenu T&ags
-        menu T&ags.Dummy l
         silent! unmenu! T&ags
 
         amenu <silent> T&ags.Refresh\ menu :call <SID>Refresh_Tags_Menu()<CR>
@@ -281,7 +307,18 @@ function! s:Add_Tags_Menu(menu_clear)
         amenu <silent> T&ags.Sort\ menu\ by.Order 
                                        \ :call <SID>Sort_Tags_Menu("order")<CR>
         amenu T&ags.-SEP1-           :
-        unmenu T&ags.Dummy
+
+        " Cleanup the popup menu
+        silent! unmenu PopUp.T&ags
+        silent! unmenu! PopUp.T&ags
+
+        amenu <silent> PopUp.T&ags.Refresh\ menu 
+                                    \ :call <SID>Refresh_Tags_Menu()<CR>
+        amenu <silent> PopUp.T&ags.Sort\ menu\ by.Name 
+                                    \ :call <SID>Sort_Tags_Menu("name")<CR>
+        amenu <silent> PopUp.T&ags.Sort\ menu\ by.Order 
+                                    \ :call <SID>Sort_Tags_Menu("order")<CR>
+        amenu PopUp.T&ags.-SEP1-           :
 
         let s:tmenu_empty = 1
     endif
@@ -290,6 +327,10 @@ function! s:Add_Tags_Menu(menu_clear)
     if exists("b:Tmenu_cmd")
         exe b:Tmenu_cmd
         let s:tmenu_empty = 0
+        " Update the popup menu
+        let cmd = substitute(b:Tmenu_cmd, '<silent> T\\&ags', 
+                                        \ '<silent> PopUp.T\\\&ags', "g")
+        exe cmd
         return
     endif
 
@@ -486,6 +527,11 @@ function! s:Add_Tags_Menu(menu_clear)
     " invocation
     exe cmd
 
+    " Update the popup menu
+    let cmd = substitute(cmd, '<silent> T\\&ags',
+                                \ '<silent> PopUp.T\\\&ags', "g")
+    exe cmd
+
     " Restore the 'cpoptions' settings
     let &cpo = old_cpo
 endfunction
@@ -506,6 +552,13 @@ amenu <silent> T&ags.Refresh\ menu :call <SID>Refresh_Tags_Menu()<CR>
 amenu <silent> T&ags.Sort\ menu\ by.Name :call <SID>Sort_Tags_Menu("name")<CR>
 amenu <silent> T&ags.Sort\ menu\ by.Order :call <SID>Sort_Tags_Menu("order")<CR>
 amenu T&ags.-SEP1-           :
+
+amenu <silent> PopUp.T&ags.Refresh\ menu :call <SID>Refresh_Tags_Menu()<CR>
+amenu <silent> PopUp.T&ags.Sort\ menu\ by.Name 
+          \ :call <SID>Sort_Tags_Menu("name")<CR>
+amenu <silent> PopUp.T&ags.Sort\ menu\ by.Order 
+          \ :call <SID>Sort_Tags_Menu("order")<CR>
+amenu PopUp.T&ags.-SEP1-           :
 
 " Automatically add the tags in the current file to the menu
 augroup FunctionMenuAutoCmds
