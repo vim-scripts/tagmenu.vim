@@ -1,7 +1,7 @@
 " File: tagmenu.vim
 " Author: Yegappan Lakshmanan
-" Version: 1.3
-" Last Modified: Sep 25, 2002
+" Version: 1.31
+" Last Modified: Nov 11, 2002
 "
 " Overview
 " --------
@@ -139,8 +139,8 @@ let s:tmenu_c_tag_types = 'macro enum struct union typedef variable function'
 
 " c++ language
 let s:tmenu_cpp_ctags_args = '--language-force=c++ --c++-types=vdtcgsuf'
-let s:tmenu_cpp_tag_types = 'variable macro typedef class enum struct ' .
-                            \ 'union function'
+let s:tmenu_cpp_tag_types = 'macro typedef class enum struct union ' .
+                            \ 'variable function'
 
 " cobol language
 let s:tmenu_cobol_ctags_args = '--language-force=cobol --cobol-types=p'
@@ -153,12 +153,12 @@ let s:tmenu_eiffel_tag_types = 'class feature'
 " fortran language
 let s:tmenu_fortran_ctags_args = '--language-force=fortran ' .
                                  \ '--fortran-types=bcefiklmnpstv'
-let s:tmenu_fortran_tag_types = 'block common entry function interface ' .
+let s:tmenu_fortran_tag_types = 'block_data common entry function interface ' .
             \ 'type label module namelist program subroutine derived variable'
 
 " java language
 let s:tmenu_java_ctags_args = '--language-force=java --java-types=pcifm'
-let s:tmenu_java_tag_types = 'method class field package interface'
+let s:tmenu_java_tag_types = 'package class interface field method'
 
 " lisp language
 let s:tmenu_lisp_ctags_args = '--language-force=lisp --lisp-types=f'
@@ -182,15 +182,15 @@ let s:tmenu_php_tag_types = 'class function'
 
 " python language
 let s:tmenu_python_ctags_args = '--language-force=python --python-types=cf'
-let s:tmenu_python_tag_types = 'class function'
+let s:tmenu_python_tag_types = 'class member function'
 
 " rexx language
 let s:tmenu_rexx_ctags_args = '--language-force=rexx --rexx-types=c'
 let s:tmenu_rexx_tag_types = 'subroutine'
 
 " ruby language
-let s:tmenu_ruby_ctags_args = '--language-force=ruby --ruby-types=cf'
-let s:tmenu_ruby_tag_types = 'class function'
+let s:tmenu_ruby_ctags_args = '--language-force=ruby --ruby-types=cfFm'
+let s:tmenu_ruby_tag_types = 'mixin class method function singleton_method'
 
 " scheme language
 let s:tmenu_scheme_ctags_args = '--language-force=scheme --scheme-types=sf'
@@ -209,8 +209,10 @@ let s:tmenu_tcl_ctags_args = '--language-force=tcl --tcl-types=p'
 let s:tmenu_tcl_tag_types = 'procedure'
 
 "verilog language
-let s:tmenu_verilog_ctags_args = '--language-force=verilog --verilog-types=mPrtwpvf'
-let s:tmenu_verilog_tag_types = 'module parameter reg task wire port variable function'
+let s:tmenu_verilog_ctags_args = '--language-force=verilog ' .
+                                \ '--verilog-types=mPrtwpvf'
+let s:tmenu_verilog_tag_types = 'module parameter reg task wire port ' .
+                                \ 'variable function'
 
 " vim language
 let s:tmenu_vim_ctags_args = '--language-force=vim --vim-types=vf'
@@ -421,6 +423,9 @@ function! s:Add_Tags_Menu(menu_clear)
         let start = strridx(one_line, "\t") + 1
         let ttype = strpart(one_line, start)
 
+        " Replace all space characters in the tag type with underscore (_)
+        let ttype = substitute(ttype, ' ', '_', 'g')
+
         " Update the count of this tag type
         let cnt = tag_{ttype}_count + 1
         let tag_{ttype}_count = cnt
@@ -449,7 +454,7 @@ function! s:Add_Tags_Menu(menu_clear)
                               \ - start) . (one_line[end] == '$' ? '\\$' : '')
         " Escape double quote characters so that the pattern can be used in
         " the search() function
-        let tag_{ttype}_{cnt}_pat = escape(tpat, '"')
+        let tag_{ttype}_{cnt}_pat = escape(tpat, '"|')
 
         " Remove the processed line
         let cmd_output = strpart(cmd_output, 
