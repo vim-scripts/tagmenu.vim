@@ -1,0 +1,90 @@
+This is a mirror of http://www.vim.org/scripts/script.php?script_id=215
+
+The taglist plugin supersedes the tags menu plugin. The taglist plugin
+integrates the functionality of the tagsmenu plugin.
+
+ The taglist plugin displays the list of tags defined in the current file in the
+"Tags" menu (in GUI Vim). The taglist plugin provides much more
+functionality than the tagsmenu plugin. You can download it from:
+
+http://vim.sourceforge.net/scripts/script.php?script_id=273
+
+You can get more information about the taglist plugin from the
+following page:
+
+    http://vim-taglist.sourceforge.net
+
+The tags menu plugin is no longer maintained.
+
+Overview
+
+The "Tags Menu" plugin provides the following features:
+
+1. Creates a "Tags" menu containing all the tags (variables, functions,
+   classes, methods, macros, etc) defined in the current file.
+2. Creates a popup menu with the contents of the "Tags" menu. This popup
+   menu can be accessed  by right clicking the mouse.
+3. Groups the tags by their type and displays them in separate submenus.
+4. The "Tags" menu can be sorted either by name or by line number.
+5. When a tag name is selected from the "Tags" menu, positions the cursor
+   at the definition of the tag.
+6. Automatically updates the "Tags" menu as you switch between
+   files/buffers.
+7. If the number of tags in a particular type exceeds a configurable limit,
+   splits the menu for that tag type into one or more submenus.
+8. Supports the following language files: Assembly, ASP, Awk, C, C++,
+   Cobol, Eiffel, Fortran, Java, Lisp, Make, Pascal, Perl, PHP, Python,
+   Rexx, Ruby, Scheme, Shell, Slang, TCL, Verilog, Vim and Yacc.
+9. Runs in all the platforms where the exuberant ctags utility and Vim are
+   supported (this includes MS-Windows and Unix based systems).
+10. Will run only in the GUI version of Vim.
+11. The ctags output for a file is cached to speed up updating the "Tags"
+    menu.
+
+This script relies on the exuberant ctags utility to get the tags defined in
+a file. You can download the exuberant ctags utility from
+http://ctags.sourceforge.net. The exuberant ctags utility must be installed
+in your system to use this plugin. You should use exuberant ctags version
+5.3 and above.  There is no need for you to create a tags file to use this
+plugin.
+
+Configuration
+
+By changing the following variables you can configure the behavior of this
+script. Set the following variables in your .vimrc file using the 'let'
+command.
+
+The script uses the Tmenu_ctags_cmd variable to locate the ctags utility.
+By default, this is set to ctags. Set this variable to point to the
+location of the ctags utility in your system:
+
+          let Tmenu_ctags_cmd = 'd:\tools\ctags.exe'
+
+If a file contains too many tags of a particular type (function, variable,
+etc), greater than a configurable limit, then the tags menu for that tag
+type will be split into sub-menus.  The default limit is 25.  This can be
+changed by setting the Tmenu_max_submenu_items variable:
+
+          let Tmenu_max_submenu_items = 20
+
+If the number of tags of a particular tag type is more than that specified
+by Tmenu_max_submenu_items setting, then the tags menu for that tag type
+will be split into sub-menus. The name of the submenu is formed using the
+names of the first and the last tag entries in that submenu. Only the first
+Tmenu_max_tag_length characters from these names will be used to form the
+submenu name. Change the Tmenu_max_tag_length setting if you want to include
+more or less characters:
+
+          let Tmenu_max_tag_length = 10
+
+By default, the tag names will be added to the menu in the order in which
+they are defined in the file. You can alphabetically sort the tag names
+in the menu by selecting the "Sort menu by->Name" menu item. You can also
+change the default order by setting the variable Tmenu_sort_type to
+"name" or "order":
+
+          let Tmenu_sort_type = "name"
+
+This script will not work in 'compatible' mode.  Make sure the 'compatible'
+option is not set. This script depends on the file type detected by Vim.
+Make sure the Vim file type detection (:filetype on) is turned on.
